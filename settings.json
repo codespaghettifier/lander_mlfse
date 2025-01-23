@@ -1,0 +1,110 @@
+{
+    "windowSize": {
+        "width": 1600,
+        "height": 1600
+    },
+    "fps": 60,
+    "lander": {
+        "width": 9,
+        "height": 70,
+        "dryMass": 400,
+        "propellantCapacity": 3600,
+        "propellantMass": 200,
+        "engineThrust": 2500,
+        "engineIsp": 350,
+        "rcsThrusterThrust": 100,
+        "rcsThrusterIsp": 100,
+        "engineFlameLength": 8,
+        "rcsThrusterFlameLength": 2,
+        "catchPin": {
+            "x": 0,
+            "y": 58
+        },
+        "engines": [ 
+            {
+                "x": -4,
+                "y": 0
+            },
+            {
+                "x": -2,
+                "y": 0
+            },
+            {
+                "x": 0,
+                "y": 0
+            },
+            {
+                "x": 2,
+                "y": 0
+            },
+            {
+                "x": 4,
+                "y": 0
+            }
+        ],
+        "rcsThrusters": [
+            {
+                "x": -3.5,
+                "y": 64
+            },
+            {
+                "x": 3.5,
+                "y": 64
+            },
+            {
+                "x": -3.5,
+                "y": 62
+            },
+            {
+                "x": 3.5,
+                "y": 62
+            },
+            {
+                "x": -3.5,
+                "y": 60
+            },
+            {
+                "x": 3.5,
+                "y": 60
+            }
+        ]
+    },
+    "terrain": {
+        "water": {
+            "xMin": 200,
+            "xMax": 10000,
+            "yMin": -1000,
+            "yMax": 0
+        },
+        "ground": {
+            "xMin": -10000,
+            "xMax": 200,
+            "yMin": -1000,
+            "yMax": 0
+        },
+        "grass": {
+            "xMin": -10000,
+            "xMax": 200,
+            "yMin": -5,
+            "yMax": 5
+        },
+        "towerBase": {
+            "xMin": -100,
+            "xMax": 100,
+            "yMin": -25,
+            "yMax": 10
+        },
+        "tower": {
+            "xMin": -10,
+            "xMax": 10,
+            "yMin": 10,
+            "yMax": 120,
+            "towerArm": {
+                "xMin": -5,
+                "xMax": 60,
+                "yMin": 95,
+                "yMax": 100
+            }
+        }
+    }
+}
