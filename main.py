@@ -2,16 +2,50 @@ import pymunk
 import pygame
 import json
 
-from RectangularObject import RectangularObject
 from Renderer import Renderer
-from Terrain import Terrain, TerrainElement
-from Lander import Lander, LanderCatchPin
+from Simulation import Simulation
 
 
 def load_settings():
     with open("settings.json") as file:
         settings = json.load(file)
     return settings
+
+
+def read_keyboard_steering_input():
+    steering_input = {
+        "engine1": False,
+        "engine2": False,
+        "engine3": False,
+        "engine4": False,
+        "engine5": False,
+        "rcsLeft": False,
+        "rcsRight": False
+    }
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE]:
+        steering_input["engine1"] = True
+        steering_input["engine2"] = True
+        steering_input["engine3"] = True
+        steering_input["engine4"] = True
+        steering_input["engine5"] = True
+    if keys[pygame.K_1]:
+        steering_input["engine1"] = True
+    if keys[pygame.K_2]:
+        steering_input["engine2"] = True
+    if keys[pygame.K_3]:
+        steering_input["engine3"] = True
+    if keys[pygame.K_4]:
+        steering_input["engine4"] = True
+    if keys[pygame.K_5]:
+        steering_input["engine5"] = True
+    if keys[pygame.K_RIGHT]:
+        steering_input["rcsLeft"] = True
+    if keys[pygame.K_LEFT]:
+        steering_input["rcsRight"] = True
+
+    return steering_input
 
 
 def main():
@@ -22,36 +56,8 @@ def main():
     screen = pygame.display.set_mode(screen_size)
     clock = pygame.time.Clock()
     
-    space = pymunk.Space()
-    space.gravity = 0, -9.81
-    # space.gravity = 0, -0.981
-
-    terrain = Terrain(settings["terrain"])
-    terrain.add_to_space(space)
-
-    initial_position = (50, 50)
-    lander = Lander(settings["lander"], initial_position)
-    lander.add_to_space(space)
-
-    def handle_collision_lander_terrain(arbiter, space, data):
-        print("Collision with terrain")
-        return True
-    
-    def handle_collision_no_collision(arbiter, space, data):
-        return False
-    
-    def handle_collision_catch_pin_arm(arbiter, space, data):
-        print("Collision with arm")
-        return True
-
-    handler_collision_lander_terrain = space.add_collision_handler(Lander.LANDER_COLISION_TYPE, TerrainElement.TERRAIN_ELEMENT_COLISION_TYPE)
-    handler_collision_catch_pin_arm = space.add_collision_handler(LanderCatchPin.CATCH_PIN_COLISION_TYPE, TerrainElement.ARM_COLISION_TYPE)
-    handler_collision_lander_catch_pin_arm = space.add_collision_handler(Lander.LANDER_COLISION_TYPE, LanderCatchPin.CATCH_PIN_COLISION_TYPE)
-    handler_collision_lander_arm = space.add_collision_handler(Lander.LANDER_COLISION_TYPE, TerrainElement.ARM_COLISION_TYPE)
-    handler_collision_lander_terrain.begin = handle_collision_lander_terrain
-    handler_collision_lander_arm.begin = handle_collision_no_collision
-    handler_collision_lander_catch_pin_arm.begin = handle_collision_no_collision
-    handler_collision_catch_pin_arm.begin = handle_collision_catch_pin_arm
+    lander_initial_position = (50, 50)
+    simulation = Simulation(settings, lander_initial_position)
 
     # renderer_scale = 1
     # renderer_scale = 2
@@ -62,56 +68,22 @@ def main():
 
     running = True
     while running:
-        steeringInput = {
-            "engine1": False,
-            "engine2": False,
-            "engine3": False,
-            "engine4": False,
-            "engine5": False,
-            "rcsLeft": False,
-            "rcsRight": False
-        }
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            steeringInput["engine1"] = True
-            steeringInput["engine2"] = True
-            steeringInput["engine3"] = True
-            steeringInput["engine4"] = True
-            steeringInput["engine5"] = True
-        if keys[pygame.K_1]:
-            steeringInput["engine1"] = True
-        if keys[pygame.K_2]:
-            steeringInput["engine2"] = True
-        if keys[pygame.K_3]:
-            steeringInput["engine3"] = True
-        if keys[pygame.K_4]:
-            steeringInput["engine4"] = True
-        if keys[pygame.K_5]:
-            steeringInput["engine5"] = True
-        if keys[pygame.K_RIGHT]:
-            steeringInput["rcsLeft"] = True
-        if keys[pygame.K_LEFT]:
-            steeringInput["rcsRight"] = True
+        steering_input = read_keyboard_steering_input()
+        simulation.set_steering_input(steering_input)
 
-
-        lander.updateSteering(steeringInput)
-
-        # Update physics
-        physics_iterations = 10
-        delta_time = 1.0 / settings["fps"] / physics_iterations
-        for _ in range(physics_iterations):
-            space.step(delta_time)
+        result, telemetry = simulation.step(1 / settings["fps"])
+        if result is not None:
+            print(result)
+            print(telemetry)
+            # running = False
 
         # Draw
         screen.fill((0, 0, 0))
-
-        renderer.draw(lander)
-        renderer.draw_group(terrain)
+        simulation.draw(renderer)
 
         # Print real fps to console
         # print(f"FPS: {clock.get_fps()}")

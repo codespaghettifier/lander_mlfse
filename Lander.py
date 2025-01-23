@@ -182,7 +182,7 @@ class Lander(RectangularObject):
         for thruster in self.rcsThrusters:
             thruster.set_lander_body(self.body)
 
-    def updateSteering(self, steeringInput):
+    def update_steering(self, steeringInput):
         self.hull_surface_rendered = False
         for engine, is_on in zip(self.engines, ["engine1", "engine2", "engine3", "engine4", "engine5"]):
             engine.updateSteering(steeringInput[is_on])
@@ -194,3 +194,17 @@ class Lander(RectangularObject):
         self.rcsThrusters[1].updateSteering(steeringInput["rcsRight"])
         self.rcsThrusters[3].updateSteering(steeringInput["rcsRight"])
         self.rcsThrusters[5].updateSteering(steeringInput["rcsRight"])
+
+    def get_telemetry(self):
+        return {
+            "position": self.body.position,
+            "angle": self.body.angle,
+            "catch_pin_position": self.catch_pin.body.position,
+            "velocity": self.body.velocity,
+            "angular_velocity": self.body.angular_velocity,
+            "mass": self.body.mass,
+            "dry_mass": self.dryMass,
+            "propellant_mass": self.propellantMass,
+            "propellant_capacity": self.propellantCapacity,
+            "moment": self.body.moment
+        }
