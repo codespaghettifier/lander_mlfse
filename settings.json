@@ -1,12 +1,12 @@
 {
     "windowSize": {
         "width": 1600,
-        "height": 1600
+        "height": 2000
     },
     "fps": 60,
     "landerInitialPosition": {
-        "x": 100,
-        "y": 150
+        "x": 200,
+        "y": 500
     },
     "simulationStepsPerSecond": 10,
     "simulationIterationsPerStep": 5,

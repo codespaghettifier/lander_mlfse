@@ -2,57 +2,12 @@ import pymunk
 import pygame
 import json
 import torch
+import math
 
 from Renderer import Renderer
 from Simulation import Simulation
+from SteeringModel import LanderSteeringModel
 
-class LanderSteeringModel(torch.nn.Module):
-    def __init__(self, device):
-        super(LanderSteeringModel, self).__init__()
-        self.device = device
-
-        self.fc1 = torch.nn.Linear(13, 64)
-        self.fc2 = torch.nn.Linear(64, 128)
-        self.fc3 = torch.nn.Linear(128, 64)
-        self.fc4 = torch.nn.Linear(64, 7)
-
-
-    def forward(self, telemetry):
-        x = [
-            telemetry['position'][0],
-            telemetry['position'][1],
-            telemetry['angle'],
-            telemetry['catch_pin_position'][0],
-            telemetry['catch_pin_position'][1],
-            telemetry['velocity'][0],
-            telemetry['velocity'][1],
-            telemetry['angular_velocity'],
-            telemetry['mass'],
-            telemetry['dry_mass'],
-            telemetry['propellant_mass'],
-            telemetry['propellant_capacity'],
-            telemetry['moment']
-        ]
-        x = torch.tensor(x, dtype=torch.float32).to(self.device)
-
-        x = torch.nn.functional.relu(self.fc1(x))
-        x = torch.nn.functional.relu(self.fc2(x))
-        x = torch.nn.functional.relu(self.fc3(x))
-        x = self.fc4(x)
-
-        y = torch.sigmoid(x)
-        y = y.cpu().detach()
-
-        steering_input = {
-            "engine1": y[0].item(),
-            "engine2": y[1].item(),
-            "engine3": y[2].item(),
-            "engine4": y[3].item(),
-            "engine5": y[4].item(),
-            "rcsLeft": y[5].item(),
-            "rcsRight": y[6].item()
-        }
-        return steering_input
 
 def to_binary_steering(steeering_input):
     binary_steering = {}
@@ -101,6 +56,35 @@ def read_keyboard_steering_input():
 
     return steering_input
 
+settings = load_settings()
+tower_arm_settings = settings["terrain"]["tower"]["towerArm"]
+target_catch_pin_position_x = tower_arm_settings["xMax"] - tower_arm_settings["xMin"]
+target_catch_pin_position_y = tower_arm_settings["yMax"] + settings["lander"]["catchPin"]["radius"]
+target_catch_pin_position = (target_catch_pin_position_x, target_catch_pin_position_y)
+target_angle = 0
+target_velocity = (0, 0)
+target_angular_velocity = 0
+
+def loss_function(telemetry):
+    catch_pin_position = telemetry['catch_pin_position']
+    angle = telemetry['angle']
+    velocity = telemetry['velocity']
+    angular_velocity = telemetry['angular_velocity']
+
+    position_loss = math.sqrt(math.sqrt((catch_pin_position[0] - target_catch_pin_position[0])**2 + (catch_pin_position[1] - target_catch_pin_position[1])**2))
+    angle_loss = abs(angle - target_angle)
+    velocity_loss = math.sqrt((velocity[0] - target_velocity[0])**2 + (velocity[1] - target_velocity[1])**2)
+    angular_velocity_loss = abs(angular_velocity - target_angular_velocity)
+
+    print(position_loss, angle_loss, velocity_loss, angular_velocity_loss)
+
+    loss = 0
+    loss += position_loss
+    # loss += angle_loss
+    loss += velocity_loss
+    # loss += angular_velocity_loss
+    # loss = position_loss + angle_loss + velocity_loss + angular_velocity_loss
+    return torch.tensor(loss, dtype=torch.float32)
 
 def main():
     settings = load_settings()
@@ -115,15 +99,15 @@ def main():
     simulation = Simulation(settings, lander_initial_position, simulation_iterations_per_step)
 
     # renderer_scale = 1
-    # renderer_scale = 2
-    renderer_scale = 5
+    renderer_scale = 2
+    # renderer_scale = 4
     # renderer_scale = 10
     renderer = Renderer(screen, (screen_size[0] / (2 * renderer_scale) - 20, screen_size[1] / (2 * renderer_scale) - 20), renderer_scale)
     # renderer = Renderer(screen, (screen_size[0] / (2 * renderer_scale) - 150, screen_size[1] / (2 * renderer_scale) - 50), renderer_scale)
 
     # Load model
     steering_model = LanderSteeringModel("cpu")
-    steering_model.load_state_dict(torch.load("model.pth"))
+    steering_model.load_state_dict(torch.load("model_300.pth"))
     steering_model.eval()
 
     running = True
@@ -138,11 +122,14 @@ def main():
         if result is not None:
             print(result)
             print(telemetry)
+            print(loss_function(telemetry))
             simulation.reset()
             # running = False
 
         # steering_input = read_keyboard_steering_input()
-        steering_input = to_binary_steering(steering_model(telemetry))
+        steering_input = steering_model(telemetry)
+        # print(steering_input)
+        steering_input = to_binary_steering(steering_input)
         simulation.set_steering_input(steering_input)
 
         # Draw
