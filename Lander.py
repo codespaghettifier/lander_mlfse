@@ -65,8 +65,8 @@ class LanderCatchPin:
     def __init__(self, settings, lander_position):
         self.x = settings["x"]
         self.y = settings["y"]
+        self.radius = settings["radius"]
         self.lander_body = None
-        self.radius = 1
 
         self.body = pymunk.Body(body_type=pymunk.Body.DYNAMIC)
         self.body.mass = 1
@@ -87,6 +87,12 @@ class LanderCatchPin:
 
     def add_to_space(self, space):
         space.add(self.body, self.shape)
+
+    def reset(self):
+        self.body.position = self.lander_body.position[0] + self.x, self.lander_body.position[1] + self.y
+        self.body.velocity = 0, 0
+        self.body.angle = 0
+        self.body.angular_velocity = 0
 
 
 class Lander(RectangularObject):
@@ -194,6 +200,15 @@ class Lander(RectangularObject):
         self.rcsThrusters[1].updateSteering(steeringInput["rcsRight"])
         self.rcsThrusters[3].updateSteering(steeringInput["rcsRight"])
         self.rcsThrusters[5].updateSteering(steeringInput["rcsRight"])
+
+    def reset(self):
+        self.hull_surface_rendered = False
+        self.body.position = self.initial_position[0], self.initial_position[1] + self.height / 2
+        self.body.velocity = 0, 0
+        self.body.angle = 0
+        self.body.angular_velocity = 0
+
+        self.catch_pin.reset()
 
     def get_telemetry(self):
         return {

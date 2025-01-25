@@ -4,6 +4,12 @@
         "height": 1600
     },
     "fps": 60,
+    "landerInitialPosition": {
+        "x": 100,
+        "y": 150
+    },
+    "simulationStepsPerSecond": 10,
+    "simulationIterationsPerStep": 5,
     "lander": {
         "width": 9,
         "height": 70,
@@ -18,7 +24,8 @@
         "rcsThrusterFlameLength": 2,
         "catchPin": {
             "x": 0,
-            "y": 58
+            "y": 58,
+            "radius": 1
         },
         "engines": [ 
             {

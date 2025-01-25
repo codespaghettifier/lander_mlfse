@@ -8,9 +8,10 @@ from Terrain import Terrain, TerrainElement
 from Lander import Lander, LanderCatchPin
 
 class Simulation:
-    def __init__(self, settings, lander_initial_position):
+    def __init__(self, settings, lander_initial_position, iterations_per_step):
         self.result = None
         self.seering_input = None
+        self.iterations_per_step = iterations_per_step
 
         self.space = pymunk.Space()
         self.space.gravity = 0, -9.81
@@ -31,9 +32,8 @@ class Simulation:
         self.handler_collision_catch_pin_arm.begin = self._handle_collision_catch_pin_arm
 
     def step(self, delta_time):
-        physics_iterations = 10
-        for i in range(physics_iterations):
-            self.space.step(delta_time / physics_iterations)
+        for _ in range(self.iterations_per_step):
+            self.space.step(delta_time / self.iterations_per_step)
         return self.result, self.lander.get_telemetry()
 
     def set_steering_input(self, steering_input):
@@ -42,6 +42,10 @@ class Simulation:
     def draw(self, renderer):
         renderer.draw(self.lander)
         renderer.draw_group(self.terrain)
+
+    def reset(self):
+        self.result = None
+        self.lander.reset()
 
     def _handle_collision_lander_terrain(self, arbiter, space, data):
         self.result = "Collision with terrain"
