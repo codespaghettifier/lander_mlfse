@@ -211,9 +211,13 @@ class Lander(RectangularObject):
         self.catch_pin.reset()
 
     def get_telemetry(self):
+        def angle_wrap(angle):
+            angle_2pi = angle - math.floor(abs(angle) / (2 * math.pi)) * math.copysign(1, angle) * 2 * math.pi
+            return angle_2pi if abs(angle_2pi) <= math.pi else angle_2pi - math.copysign(1, angle_2pi) * 2 * math.pi
+                
         return {
             "position": self.body.position,
-            "angle": self.body.angle,
+            "angle": angle_wrap(self.body.angle),
             "catch_pin_position": self.catch_pin.body.position,
             "velocity": self.body.velocity,
             "angular_velocity": self.body.angular_velocity,

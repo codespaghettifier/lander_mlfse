@@ -6,7 +6,7 @@
     "fps": 60,
     "landerInitialPosition": {
         "x": 200,
-        "y": 500
+        "y": 300
     },
     "simulationStepsPerSecond": 10,
     "simulationIterationsPerStep": 5,
