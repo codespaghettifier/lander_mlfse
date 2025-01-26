@@ -120,8 +120,6 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-
-
         result, telemetry = simulation.step(1 / settings["fps"])
         loss_function(telemetry)
         if result is not None:
