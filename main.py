@@ -6,14 +6,9 @@ import math
 
 from Renderer import Renderer
 from Simulation import Simulation
-from SteeringModel import LanderSteeringModel
+from LanderSteeringModel import LanderSteeringModel
+from SteeringModelGenetic import LanderSteeringModelGenetic
 
-
-def to_binary_steering(steeering_input):
-    binary_steering = {}
-    for key, value in steeering_input.items():
-        binary_steering[key] = value > 0.5
-    return binary_steering
 
 def load_settings():
     with open("settings.json") as file:
@@ -86,7 +81,7 @@ def loss_function(telemetry):
     angular_velocity_loss = angular_velocity_loss * 10 + math.exp(angular_velocity_loss) - 1
     loss = position_loss + angle_loss + velocity_loss + angular_velocity_loss
 
-    print(f"{loss:.2f}\t{position_loss:.2f}\t{angle_loss:.2f}\t{velocity_loss:.2f}\t{angular_velocity_loss:.2f}")
+    # print(f"{loss:.2f}\t{position_loss:.2f}\t{angle_loss:.2f}\t{velocity_loss:.2f}\t{angular_velocity_loss:.2f}")
     return torch.tensor(loss, dtype=torch.float32)
 
 def main():
@@ -109,7 +104,7 @@ def main():
     # renderer = Renderer(screen, (screen_size[0] / (2 * renderer_scale) - 150, screen_size[1] / (2 * renderer_scale) - 50), renderer_scale)
 
     # Load model
-    steering_model = LanderSteeringModel("cpu", target_catch_pin_position)
+    steering_model = LanderSteeringModelGenetic("cpu", target_catch_pin_position)
     # steering_model.load_state_dict(torch.load("model_100.pth"))
     steering_model.load_state_dict(torch.load("model.pth"))
     steering_model.eval()
@@ -132,7 +127,7 @@ def main():
         # steering_input = read_keyboard_steering_input()
         steering_input = steering_model(telemetry)
         # print(steering_input)
-        steering_input = to_binary_steering(steering_input)
+        steering_input = LanderSteeringModel.to_binary_steering(steering_input)
         simulation.set_steering_input(steering_input)
 
         # Draw
