@@ -1,9 +1,15 @@
 {
     "windowSize": {
         "width": 1600,
-        "height": 1600
+        "height": 2000
     },
     "fps": 60,
+    "landerInitialPosition": {
+        "x": 200,
+        "y": 300
+    },
+    "simulationStepsPerSecond": 10,
+    "simulationIterationsPerStep": 5,
     "lander": {
         "width": 9,
         "height": 70,
@@ -18,7 +24,8 @@
         "rcsThrusterFlameLength": 2,
         "catchPin": {
             "x": 0,
-            "y": 58
+            "y": 58,
+            "radius": 1
         },
         "engines": [ 
             {
