@@ -27,5 +27,5 @@ class LanderSteeringModelGenetic(LanderSteeringModel):
         y = torch.sigmoid(x)
         y = y.cpu().detach()
 
-        return self.output_to_steering_input(y)
+        return LanderSteeringModel.output_to_steering_input(y)
     

@@ -51,6 +51,9 @@ class Simulation:
         self.lander.reset()
         self.lander.body.angle = self.lander_initial_angle
 
+    def get_telemetry(self):
+        return self.lander.get_telemetry()
+
     def _handle_collision_lander_terrain(self, arbiter, space, data):
         self.result = "Collision with terrain"
         return True

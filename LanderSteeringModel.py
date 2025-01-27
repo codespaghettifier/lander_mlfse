@@ -29,10 +29,9 @@ class LanderSteeringModel(torch.nn.Module):
             # telemetry['moment']
         ]
         return torch.tensor(input, dtype=torch.float32).to(self.device)
-    
-    def output_to_steering_input(self, output):
-        y = torch.sigmoid(output)
-        y = y.cpu().detach()
+
+    def output_to_steering_input(output):
+        y = output.cpu().detach()
 
         steering_input = {
             "engine1": y[0].item(),
@@ -49,4 +48,10 @@ class LanderSteeringModel(torch.nn.Module):
         binary_steering = {}
         for key, value in steeering_input.items():
             binary_steering[key] = value > 0.5
+        return binary_steering   
+    
+    def to_binary_steering_probabilistic(steeering_input):
+        binary_steering = {}
+        for key, value in steeering_input.items():
+            binary_steering[key] = value > torch.rand(1).item()
         return binary_steering   
